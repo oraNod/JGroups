@@ -5,20 +5,20 @@
 This chapter describes the most frequently used protocols, and their configuration. _Ergonomics_
 (<<Ergonomics>>) strives to reduce the number of properties that have to be configured, by
 dynamically adjusting them at run time, however, this is not yet in place.
-    
+
 
 Meanwhile, we recommend that users should copy one of the predefined configurations (shipped with JGroups), e.g.
 +udp.xml+ or +tcp.xml+, and make only minimal changes to it.
 
 This section is work in progress; we strive to update the documentation as we make changes to the code.
-    
+
 
 [[CommonProps]]
 === Properties availabe in every protocol
 
 The table below lists properties that are available in all protocols, as they're defined in the superclass
 of all protocols, org.jgroups.stack.Protocol.
-        
+
 
 .Properties of org.jgroups.stack.Protocol
 [align="left",width="90%",cols="2,10",options="header"]
@@ -28,9 +28,9 @@ of all protocols, org.jgroups.stack.Protocol.
           statistics are (or whether they even exist) depends on the particular protocol.
           See the `org.jgroups.stack.Protocol` javadoc for the available API related to statistics.
           Default is true.
-                        
+
 |ergonomics | Turns on ergonomics. See <<Ergonomics>> for details.
-                        
+
 |id | Gives the protocol a different ID if needed so we can have multiple instances of it in
       the same stack
 |===============
@@ -113,17 +113,17 @@ address chosen will be:
 
 `TP` is the base class for all transports, e.g. `UDP` and `TCP`. All of the properties
 defined here are inherited by the subclasses. The properties for `TP` are:
-        
+
 
 ${TP}
 
 `bind_addr` can be set to the address of a network interface, e.g. +192.168.1.5+.
 It can also be set for the entire stack using system property +$$-Djgroups.bind_addr$$+, which
 provides a value for bind_addr unless it has already been set in the XML config.
-        
+
 
 The following special values are also recognized for `bind_addr`:
-        
+
 
 GLOBAL:: Picks a global IP address if available. If not, falls back to a SITE_LOCAL IP address.
 
@@ -134,7 +134,7 @@ LINK_LOCAL:: Picks a link-local IP address, from +169.254.1.0+ through
              +169.254.254.255+.
 
 NON_LOOPBACK:: Picks _any_ non loopback address.
-                    
+
 LOOPBACK:: Pick a loopback address, e.g. +127.0.0.1+.
 
 match-interface:: Pick an address which matches a pattern against the interface name,
@@ -148,9 +148,9 @@ match-host:: Pick an address which matches a pattern against the host name,
 
 custom:: Use custom code to pick the bind address. The value after `custom` needs to be the fully qualified name
          of a class implementing `Supplier<InetAddress>`, e.g. bind_addr="custom:com.acme.BindAddressPicker".
-                    
+
 An example of setting the bind address in UDP to use a site local address is:
-        
+
 [source,xml]
 ----
 <UDP bind_addr="SITE_LOCAL" />
@@ -169,7 +169,7 @@ first entry that works will be used. Example:
 
 This would try to bind to `eth2` first. If not found, then an interface with address `10.5.5.5` would be tried,
 then an interface starting with `en` would be tried. If still not found, we'd bind to `127.0.0.1`.
-        
+
 
 [[UDP]]
 ==== UDP
@@ -178,13 +178,13 @@ UDP uses IP multicast for sending messages to all members of a group and UDP dat
 messages (sent to a single member). When started, it opens a unicast and multicast socket: the unicast
 socket is used to send/receive unicast messages, whereas the multicast socket sends and receives multicast
 messages. The channel's physical address will be the address and port number of the unicast socket.
-            
+
 A protocol stack with UDP as transport protocol is typically used with clusters whose members run
 in the same subnet. If running across subnets, an admin has to ensure that
 IP multicast is enabled across subnets. It is often the case that IP multicast is not enabled across
 subnets. In such cases, the stack has to either use UDP without IP multicasting or other transports
 such as TCP.
-            
+
 
 ${UDP}
 
@@ -194,7 +194,7 @@ ${UDP}
 
 Specifying TCP in your protocol stack tells JGroups to use TCP to send messages between cluster members.
 Instead of using a multicast bus, the cluster members create a mesh of TCP connections.
-            
+
 For example, while UDP sends 1 IP multicast packet when sending a message to a cluster of 10 members,
 TCP needs to send the message 9 times. It sends the same message to the first member, to the second
 member, and so on (excluding itself as the message is looped back internally).
@@ -202,7 +202,7 @@ member, and so on (excluding itself as the message is looped back internally).
 This is slow, as the cost of sending a group message is O(n) with TCP, where it is O(1) with UDP. As the
 cost of sending a group message with TCP is a function of the cluster size, it becomes higher with
 larger clusters.
-            
+
 
 NOTE: We recommend to use UDP for larger clusters, whenever possible
 
@@ -242,7 +242,7 @@ ${TCP_NIO2}
 
 ==== TUNNEL
 TUNNEL is described in <<TUNNEL_Advanced>>.
-            
+
 
 ${TUNNEL}
 
@@ -255,7 +255,7 @@ coordinator. Once a coordinator is found, the joiner sends a JOIN request to the
 
 Discovery is also called periodically by `MERGE2` (see <<MERGE2>>), to see if we have
 diverging cluster membership information.
-        
+
 
 [[Discovery]]
 ==== Discovery
@@ -266,7 +266,7 @@ properties below can be used in any subclass.
 Discovery sends a discovery request, and waits for +$$num_initial_members$$+ discovery
 responses, or +timeout+ ms, whichever occurs first, before returning. Note that
 +$$break_on_coord_rsp="true"$$+ will return as soon as we have a response from a coordinator.
-            
+
 
 ${Discovery}
 
@@ -277,7 +277,7 @@ Besides finding the current coordinator in order to send a JOIN request to it, d
 fetches information about members and adds it to its local caches. This information includes
 the logical name, UUID and IP address/port of each member. When discovery responses are received,
 the information in it will be added to the local caches.
-                
+
 
 Since 3.5 it is possible to define this information in a single file, with each line providing
 information about one member. The file contents look like this:
@@ -292,31 +292,31 @@ m3.1 3 10.240.199.15:7800  F
 This file defines information about 3 members m1.1, m2.1 and m3.1. The first element ("m1.1") is the
 logical name. Next comes the UUID (1), followed by the IP address and port (`10.240.78.26:7800`).
 T means that the member is the current coordinator.
-                
+
 Methods `dumpCache()` can be used to write the current contents of any member to a file (in the above
 format) and `addToCache()` can be used to add the contents of a file to any member. These operations
 can for example be invoked via JMX or probe.sh.
-                
+
 Refer to the section on `FILE_PING` for more information on how to use these files to speed up
 the discovery process.
-                
+
 
 [[PING]]
 ==== PING
 
 Initial (dirty) discovery of members. Used to detect the coordinator (oldest member), by
 mcasting PING requests to an IP multicast address.
-            
+
 Each member responds with a packet {C, A}, where C=coordinator's address and A=own address. After N
 milliseconds or M replies, the joiner determines the coordinator from the responses, and sends a
 JOIN request to it (handled by GMS). If nobody responds, we assume we are the first member of a group.
-            
+
 Unlike TCPPING, PING employs dynamic discovery, meaning that the member does not have to know in advance
 where other cluster members are.
-            
+
 PING uses the IP multicasting capabilities of the transport to send a discovery
 request to the cluster. It therefore requires UDP as transport.
-            
+
 
 ${PING}
 
@@ -326,12 +326,12 @@ ${PING}
 
 TCPPING is used with TCP as transport, and uses a static list of cluster members's addresses. See
 <<TCPPING>> for details.
-            
+
 
 ${TCPPING}
 
 NOTE: It is recommended to include the addresses of _all_ cluster members in `initial_hosts`.
-                
+
 
 
 [[TCPGOSSIP_Prot]]
@@ -339,7 +339,7 @@ NOTE: It is recommended to include the addresses of _all_ cluster members in `in
 
 TCPGOSSIP uses an external GossipRouter to discover the members of a cluster. See <<TCPGOSSIP>>
 for details.
-            
+
 
 ${TCPGOSSIP}
 
@@ -351,13 +351,13 @@ transports, but usually is used in combination with TCP. TCP usually requires TC
 all cluster members explicitly, but MPING doesn't have this requirement. The typical use case for this
 is when we want TCP as transport, but multicasting for discovery so we don't have to define a static
 list of initial hosts in TCPPING
-            
+
 MPING uses its own multicast socket for discovery. Properties +$$bind_addr$$+ (can also
 be set via ++$$-Djgroups.bind_addr=$$++), +$$mcast_addr$$+ and
 +$$mcast_port$$+ can be used to configure it.
-            
+
 Note that MPING requires a separate thread listening on the multicast socket for discovery requests.
-            
+
 
 ${MPING}
 
@@ -365,12 +365,12 @@ ${MPING}
 ==== FILE_PING
 
 FILE_PING can be used instead of GossipRouter in cases where no external process is desired.
-            
+
 
 Since 3.5, the way FILE_PING performs discovery has changed. The following paragraphs describe the new
 mechanism to discover members via FILE_PING or subclasses (e.g. GOOGLE_PING2),
 so this applies to all cloud-based stores as well.
-            
+
 Instead of storing 1 file per member in the file system or cloud store, we only store 1 file for
 _all_ members. This has the advantage, especially in cloud stores, that the number
 of reads is not a function of the cluster size, e.g. we don't have to perform 1000 reads for member
@@ -506,7 +506,7 @@ B: c6afa01d-494f-f340-c0db-9795102ac2a3: 192.168.1.168:7801 (11 secs old)
 
 Here, we can see that C is marked as removable. Once its entry is 60 seconds old (`logical_addr_cache_expiration`), then
 the reaper (if configured to run) will remove the element on its next run.
-            
+
 
 [[BootstrapConfiguration]]
 ===== Configuration with a preconfigured bootstrap file
@@ -524,12 +524,12 @@ m3.1 3 10.240.199.15:7800  F
 
 , the member called "m1.1" needs to have a UUID of 1, and needs to run on host 10.240.78.26 on
 port 7800. The UUID can be injected via an AddressGenerator (see UPerf for an example).
-                
+
 When a member starts, it loads the bootstrap file, which contains information about all other members,
 and thus (ideally) never needs to run a discovery process. In the above example, the new joiner also
 knows that the current coordinator (marked with a 'T') is m1.1, so it can send its JOIN request to
 that node.
-                
+
 When the coordinator changes, or members not listed in the file join, the current coordinator
 writes the file again, so all members have access to the updated information when needed.
 
@@ -609,7 +609,7 @@ are never killed with kill -9), or zombies are removed by a system admin, then i
 
 NOTE: Processes killed with kill -3 are removed from the DB as a shutdown handler will be called on kill -3
 (but not on kill -9).
-            
+
 
 ${JDBC_PING}
 
@@ -619,7 +619,7 @@ ${JDBC_PING}
 
 BPING uses UDP broadcasts to discover other nodes. The default broadcast address (dest) is
                 255.255.255.255, and should be replaced with a subnet specific broadcast, e.g. 192.168.1.255.
-            
+
 
 ${BPING}
 
@@ -630,11 +630,11 @@ ${BPING}
 RACKSPACE_PING uses Rackspace Cloud Files Storage to discover initial members. Each node writes a small
                 object in a shared Rackspace container. New joiners read all addresses from the container and ping each
                 of the elements of the resulting set of members. When a member leaves, it deletes its corresponding object.
-            
+
 
 This objects are stored under a container called 'jgroups', and each node will write an object name after
                 the cluster name, plus a "/" followed by the address, thus simulating a hierarchical structure.
-            
+
 
 ${RACKSPACE_PING}
 
@@ -808,14 +808,14 @@ ${DNS_PING}
 SWIFT_PING uses Openstack Swift to discover initial members. Each node writes a small
                 object in a shared container. New joiners read all addresses from the container and ping each
                 of the elements of the resulting set of members. When a member leaves, it deletes its corresponding object.
-            
+
 
 These objects are stored under a container called 'jgroups' (by default), and each node will write an object name after
                 the cluster name, plus a "/" followed by the address, thus simulating a hierarchical structure.
-            
+
 
 Currently only Openstack Keystone authentication is supported. Here is a sample configuration block:
-            
+
 
 
 [source,xml]
@@ -828,7 +828,7 @@ Currently only Openstack Keystone authentication is supported. Here is a sample 
     username="demo"
     password="password"
     tenant="demo" />
-            
+
 ----
 
 ${SWIFT_PING}
@@ -911,10 +911,10 @@ The Persistent Discovery Cache can be used to cache the results of the discovery
 E.g. if we have TCPPING.initial_hosts configured to include only members A and B, but have a lot more
 members, then other members can bootstrap themselves and find the right coordinator even when neither
 A nor B are running.
-            
+
 
 An example of a TCP-based stack configuration is:
-            
+
 
 
 [source,xml]
@@ -926,7 +926,7 @@ An example of a TCP-based stack configuration is:
          initial_hosts="192.168.1.5[7000]" port_range="0"
          return_entire_cache="true"
          use_disk_cache="true" />
-            
+
 ----
 
 ${PDC}
@@ -955,10 +955,10 @@ three separate cluster members and the other two members. If communication betwe
 the following subgroups would form:
 +{A,B} and {C,D,E}+
 Following the merge, the new view would be: +{C,D,A,B,E}+, with C being the new coordinator.
-            
+
 Note that "A", "B" and so on are just logical names, attached to UUIDs, but the actual sorting is done
                 on the actual UUIDs.
-            
+
 
 [[MERGE3]]
 ==== MERGE3
@@ -1030,7 +1030,7 @@ failure detection layer to exclude a crashed member (this is done by the group m
 simply to notify everyone that a node in the cluster is suspected of having crashed.
 
 The SUSPECT message is handled by the GMS protocol of the current coordinator only; all other members ignore it.
-        
+
 
 [[FD]]
 ==== FD
@@ -1112,7 +1112,7 @@ member. When a message or heartbeat (sent every `interval` ms) from P is receive
 The heartbeat checker checks every `timeout` ms for members whose flag is false, suspects those, and
 - when done - resets all flags to false again.
 The times it takes to suspect a member are the same as for `FD_ALL`
-            
+
 
 ${FD_ALL2}
 
@@ -1141,7 +1141,7 @@ Each member in a cluster connects to its neighbor (the last member connects to t
 Member `B` is suspected when its neighbor `A` detects abnormal closing of its TCP socket
 (presumably due to a crash of `B`). However, if `B` is about to leave gracefully, it lets its neighbor `A`
 know, so that `A` doesn't suspect `B`.
-            
+
 ===== Example
 * The membership is `{A,B,C,D,E}`.
 * Members `C` and `D` are killed at the same time
@@ -1157,7 +1157,7 @@ know, so that `A` doesn't suspect `B`.
 NOTE: It is recommended to use `FD_SOCK` and `FD` or `FD_ALL` together in the same stack: `FD_SOCK` detects killed
 nodes immediately, and `FD_ALL` (with a higher timeout) detects hung members or kernel panics / crashed switches
 (which don't close the TCP connection) after the timeout.
-            
+
 
 ${FD_SOCK}
 
@@ -1199,21 +1199,21 @@ the behavior is as follows:
 |Any member (say `O`) crashes|
                                `FD_SOCK` detects this immediately (as the TCP socket was closed). `O` is suspected and
                                 removed
-                            
+
 |Member `Y` hangs|
                                 `FD_ALL` starts missing heartbeats from `Y` (note that host `192.168.1.5` is up) and suspects
                                 `Y` after 60 seconds. `Y` is removed from the view.
-                            
+
 |Host `192.168.1.3` is shutdown (`shutdown -h now`)|
                                 Since this is a graceful shutdown, the OS closes all sockets. `FD_SOCK` therefore
                                 suspects `A`, `B` and `C` and removes them from the view immediately.
-                            
+
 |The power supply to host `192.168.1.3` is cut, or `192.168.1.3` panicked|
                                 `FD_HOST` detects that `192.168.1.3` is not alive and suspects `A`, `B` and `C` after ~35 to 45s.
-                            
+
 |Member `N` leaves|
                                 Since this is a graceful leave, none of the failure detection protocols kick in
-                            
+
 
 |===============
 
@@ -1226,17 +1226,17 @@ ${FD_HOST}
 
 Verifies that a suspected member is really dead by pinging that member one last time before excluding it,
                 and dropping the suspect message if the member does respond.
-            
+
 
 VERIFY_SUSPECT tries to minimize false suspicions.
-            
+
 
 The protocol works as follows: it catches SUSPECT events traveling up the stack.
                 Then it verifies that the suspected member is really dead. If yes, it passes the SUSPECT event up the
                 stack, otherwise it discards it. VERIFY_SUSPECT Has to be placed somewhere above the failure detection
                 protocol and below the GMS protocol (receiver of the SUSPECT event). Note that SUSPECT events may be
                 reordered by this protocol.
-            
+
 
 ${VERIFY_SUSPECT}
 
@@ -1303,7 +1303,7 @@ ${UNICAST3}
 The RSVP protocol is not a reliable delivery protocol per se, but augments reliable protocols such
                 as NAKACK, UNICAST or UNICAST2. It should be placed somewhere _above_ these in
                 the stack.
-            
+
 
 ${RSVP}
 
@@ -1315,22 +1315,22 @@ ${RSVP}
 To serve potential retransmission requests, a member has to store received messages until it is known
             that every member in the cluster has received them. Message stability for a given message M means that M
             has been seen by everyone in the cluster.
-        
+
 
 The stability protocol periodically (or when a certain number of bytes have been received) initiates a
             consensus protocol, which multicasts a stable message containing the highest message numbers for a
             given member. This is called a digest.
-        
+
 
 When everyone has received everybody else's stable messages, a digest is computed which consists of the
             minimum sequence numbers of all received digests so far. This is the stability vector, and contain only
             message sequence numbers that have been seen by everyone.
-        
+
 
 This stability vector is the broadcast to the group and everyone can remove messages from their
             retransmission tables whose sequence numbers are smaller than the ones received in the stability vector.
             These messages can then be garbage collected.
-        
+
 
 
 
@@ -1341,12 +1341,12 @@ STABLE garbage collects messages that have been seen by all members of a cluster
                 seen a message can it be removed from the retransmission buffers. STABLE periodically gossips its
                 highest and lowest messages seen. The lowest value is used to compute the min (all lowest seqnos
                 for all members), and messages with a seqno below that min can safely be discarded.
-            
+
 
 Note that STABLE can also be configured to run when N bytes have been received. This is recommended
                 when sending messages at a high rate, because sending stable messages based on time might accumulate
                 messages faster than STABLE can garbage collect them.
-            
+
 
 ${STABLE}
 
@@ -1359,7 +1359,7 @@ Group membership takes care of joining new members, handling leave
             requests by existing members, and handling SUSPECT messages for crashed
             members, as emitted by failure detection protocols. The algorithm for
             joining a new member is essentially:
-        
+
 
 
 ----
@@ -1376,7 +1376,7 @@ Group membership takes care of joining new members, handling leave
         - install view and break out of the loop
     - else
         - sleep for 5 seconds and continue the loop
-        
+
 ----
 
 
@@ -1391,7 +1391,7 @@ ${GMS}
 
 Consider the following situation: a new member wants to join a
                     group. The prodedure to do so is:
-                
+
 
 * Multicast an (unreliable) discovery request (ping)
 * Wait for n responses or m milliseconds (whichever is first)
@@ -1414,7 +1414,7 @@ this problem ? There are two solutions:
   multiple initial cordinators, but rectifies the problem by merging
   different subgroups back into one. Note that this might involve state
   merging which needs to be done by the application.
-                        
+
 
 
 [[FlowControl]]
@@ -1442,7 +1442,7 @@ Note that flow control can be bypassed by setting message flag Message.NO_FC. Se
 
 
 The properties for FlowControl are shown below and can be used in `MFC` and `UFC`:
-        
+
 
 ${FlowControl}
 
@@ -1455,7 +1455,7 @@ impeded by unicast flow control, and vice versa. Also, performance for the separ
 plus they can be individually omitted.
 
 For example, if no unicast flow control is needed, UFC can be left out of the stack configuration.
-            
+
 
 [[MFC]]
 
@@ -1463,7 +1463,7 @@ For example, if no unicast flow control is needed, UFC can be left out of the st
 ===== MFC
 
 MFC has currently no properties other than those inherited by FlowControl (see above).
-                
+
 
 ${MFC}
 
@@ -1473,7 +1473,7 @@ ${MFC}
 ===== UFC
 
 UFC has currently no properties other than those inherited by FlowControl (see above).
-                
+
 
 ${UFC}
 
@@ -1526,15 +1526,15 @@ ${MFC_NB}
 FRAG and FRAG2 fragment large messages into smaller ones, send the smaller ones, and at the receiver
                 side, the smaller fragments will get assembled into larger messages again, and delivered to the
                 application. FRAG and FRAG2 work for both unicast and multicast messages.
-            
+
 
 The difference between FRAG and FRAG2 is that FRAG2 does 1 less copy than FRAG, so it is the recommended
                 fragmentation protocol. FRAG serializes a message to know the exact size required (including headers),
                 whereas FRAG2 only fragments the payload (excluding the headers), so it is faster.
-            
+
 
 The properties of FRAG2 are:
-            
+
 
 ${FRAG2}
 
@@ -1543,7 +1543,7 @@ Contrary to FRAG, FRAG2 does not need to serialize a message in order to break i
                 size addition for headers and src and dest addresses is minimal when the transport finally has to
                 serialize the message, so we add a constant (by default 200 bytes). Because of the efficiency gained by
                 not having to serialize the message just to determine its size, FRAG2 is generally recommended over FRAG.
-            
+
 ${FRAG3}
 
 FRAG3 needs only half the memory than FRAG2 to handle fragments and the final full message. See
@@ -1560,11 +1560,11 @@ SEQUENCER provider total order for multicast (=group) messages by forwarding mes
                 coordinator, which then sends the messages to the cluster on behalf of the original sender. Because it
                 is always the same sender (whose messages are delivered in FIFO order), a global (or total) order
                 is established.
-            
+
 
 Sending members add every forwarded message M to a buffer and remove M when they receive it. Should
                 the current coordinator crash, all buffered messages are forwarded to the new coordinator.
-            
+
 
 ${SEQUENCER}
 
@@ -1584,20 +1584,20 @@ STATE_TRANSFER is the existing transfer protocol, which transfers byte[] buffers
                 ouput stream to the getState(OutputStream) callback, and at the state
                 requester's side, an input stream is created and passed to the
                 setState(InputStream) callback.
-            
+
 
 This allows us to continue using STATE_TRANSFER, until the new state transfer protocols are going to
                 replace it (perhaps in 4.0).
-            
+
 
 In order to transfer application state to a joining member of a cluster, STATE_TRANSFER has to load
                 entire state into memory and send it to a joining member. The major limitation of this approach is that
                 for state transfers that are very large this would likely result in memory exhaustion.
-            
+
 
 For large state transfer use either the STATE or STATE_SOCK protocol. However, if the state is small,
                 STATE_TRANSFER is okay.
-            
+
 
 ${STATE_TRANSFER}
 
@@ -1608,7 +1608,7 @@ ${STATE_TRANSFER}
 
 StreamingStateTransfer is the superclass of STATE and STATE_SOCK (see below).
                 Its properties are:
-            
+
 
 ${StreamingStateTransfer}
 
@@ -1624,28 +1624,28 @@ ${StreamingStateTransfer}
 STATE was renamed from (2.x) STREAMING_STATE_TRANSFER, and refactored to extend a common superclass
                     StreamingStateTransfer. The other state transfer protocol extending
                     StreamingStateTransfer is STATE_SOCK (see <<STATE_SOCK>>).
-                
+
 
 STATE uses a _streaming approach_ to state transfer; the
                     state provider writes its state to the output stream passed to it in the
                     getState(OutputStream) callback, which chunks the stream up into chunks
                     that are sent to the state requester in separate messages.
-                
+
 
 The state requester receives those chunks and feeds them into the input stream from which the
                     state is read by the setState(InputStream) callback.
-                
+
 
 The advantage compared to STATE_TRANSFER is that state provider and requester only need small
                     (transfer) buffers to keep a part of the state in memory, whereas STATE_TRANSFER needs to copy
                     the _entire_ state into memory.
-                
+
 
 If we for example have a list of 1 million elements, then STATE_TRANSFER would have to create a
                     byte[] buffer out of it, and return the byte[] buffer, whereas a streaming approach could iterate
                     through the list and write each list element to the output stream. Whenever the buffer capacity is
                     reached, we'd then send a message and the buffer would be reused to receive more data.
-                
+
 
 
 
@@ -1653,7 +1653,7 @@ If we for example have a list of 1 million elements, then STATE_TRANSFER would h
 
 STATE has currently no properties other than those inherited by
                     StreamingStateTransfer (see above).
-                
+
 
 [[pbcast.STATE_SOCK]]
 
@@ -1662,20 +1662,20 @@ STATE has currently no properties other than those inherited by
 
 STATE_SOCK is also a streaming state transfer protocol, but compared to STATE, it doesn't send the chunks
                 as messages, but uses a TCP socket connection between state provider and requester to transfer the state.
-            
+
 
 The state provider creates a server socket at a configurable bind address and port, and the address
                 and port are sent back to a state requester in the state response. The state requester then establishes
                 a socket connection to the server socket and passes the socket's input stream to the
                 setState(InputStream) callback.
-            
+
 
 
 
 ===== Configuration
 
 The configuration options of STATE_SOCK are listed below:
-                
+
 
 ${STATE_SOCK}
 
@@ -1686,12 +1686,12 @@ ${STATE_SOCK}
 
 BARRIER is used by some of the state transfer protocols, as it lets existing threads complete and blocks
                 new threads to get both the digest and state in one go.
-            
+
 
 In 3.1, a new mechanism for state transfer will be implemented, eliminating the need for BARRIER. Until
                 then, BARRIER should be used when one of the state transfer protocols is used. BARRIER is
                 part of every default stack which contains a state transfer protocol.
-            
+
 
 ${BARRIER}
 
@@ -1704,7 +1704,7 @@ Flushing forces group members to send all their pending messages
             cluster so that state transfer or a join can be done. It is also
             called the stop-the-world model as nobody will be able to send
             messages while a flush is in process. Flush is used in:
-        
+
 
 
 State transfer:: When a member requests state transfer, it tells everyone to
@@ -1716,11 +1716,11 @@ View changes (e.g.a join):: Before installing a new view
                         V2, flushing ensures that all messages _sent_ in the
                         current view V1 are indeed _delivered_ in V1, rather than in V2
                         (in all non-faulty members). This is essentially Virtual Synchrony.
-                    
 
 
-                
-        
+
+
+
 
 FLUSH is designed as another protocol positioned just below the
             channel, on top of the stack (e.g. above STATE_TRANSFER). The STATE_TRANSFER and GMS
@@ -1729,14 +1729,14 @@ FLUSH is designed as another protocol positioned just below the
             the FLUSH protocol to let the caller know that the flush has completed.
             When done (e.g. view was installed or state transferred), the protocol
             sends a message, which will allow everyone in the cluster to resume sending.
-        
+
 
 A channel is notified that the FLUSH phase has been started by
-            the Receiver.block() callback. 
-        
+            the Receiver.block() callback.
+
 
 Read more about flushing in <<Flushing>>.
-        
+
 
 ${FLUSH}
 
@@ -1779,14 +1779,14 @@ _entire message_ into the payload of a new message that's then encrypted and sen
 This is done by SYM_ENCRYPT. The configuration includes mainly attributes that define the keystore, e.g. `keystore_name`
 (name of the keystore, needs to be found on the classpath), `store_password`, `key_password` and `alias`.
 
-SYM_ENCRYPT uses store type JCEKS (for details between JKS and JCEKS see here), however `keytool` uses JKS, therefore
-a keystore generated with keytool will not be accessible.
-
-To generate a keystore compatible with JCEKS, use the following command line options to keytool:
+SYM_ENCRYPT uses store type JCEKS by default.
+To generate a keystore in JCEKS format with keytool, use the following command:
 
 ----
 keytool -genseckey -alias myKey -keypass changeit -storepass changeit  -keyalg Blowfish -keysize 56 -keystore defaultStore.keystore -storetype  JCEKS
 ----
+
+If you create a keystore in a different format, specify it with the `keystore_type` attribute.
 
 SYM_ENCRYPT could then be configured as follows:
 
@@ -1803,7 +1803,7 @@ SYM_ENCRYPT could then be configured as follows:
 
 Note that defaultStore.keystore will have to be found in the classpath.
 
-NOTE: Both SYM_ENCRYPT and ASYM_ENCRYPT should be placed directly under NAKACK2
+NOTE: Both SYM_ENCRYPT and ASYM_ENCRYPT should be placed directly above NAKACK2
 (see link:https://github.com/belaban/JGroups/tree/master/conf[sample configurations], e.g. sym-encrypt.xml or
 asym-encrypt.xml).
 
@@ -2031,7 +2031,7 @@ validated can therefore not join or merge.
 
 STATS exposes various statistics, e.g. number of received multicast and unicast messages, number of
                 bytes sent etc. It should be placed directly over the transport
-            
+
 
 ${STATS}
 
@@ -2045,7 +2045,7 @@ ${STATS}
 COMPRESS compresses messages larger than +$$min_size$$+, and uncompresses them at the
 receiver's side. Property +$$compression_level$$+ determines how thorough the
 compression algorith should be (0: no compression, 9: highest compression).
-            
+
 
 ${COMPRESS}
 
@@ -2059,7 +2059,7 @@ ${COMPRESS}
 
 RELAY2 provides clustering between different sites (local clusters), for multicast and unicast messages.
                 See <<Relay2Advanced>> for details.
-            
+
 
 ${RELAY2}
 
@@ -2069,7 +2069,7 @@ ${RELAY2}
 ==== STOMP
 
 STOMP is discussed in <<STOMP>>. The properties for it are shown below:
-            
+
 
 ${STOMP}
 
@@ -2079,7 +2079,7 @@ ${STOMP}
 ==== DAISYCHAIN
 
 The DAISYCHAIN protocol is discussed in <<DaisyChaining>>.
-            
+
 
 ${DAISYCHAIN}
 
@@ -2091,7 +2091,7 @@ ${DAISYCHAIN}
 RATE_LIMITER can be used to set a limit on the data sent per time unit. When sending data, only
                 max_bytes can be sent per time_period milliseconds. E.g. if max_bytes="50M" and time_period="1000", then
                 a sender can only send 50MBytes / sec max.
-            
+
 
 ${RATE_LIMITER}
 
@@ -2161,7 +2161,7 @@ ${CENTRAL_LOCK2}
 ==== COUNTER
 
 COUNTER is the implementation of cluster wide counters, used by the CounterService.
-            
+
 
 ${COUNTER}
 
@@ -2174,7 +2174,7 @@ ${COUNTER}
 
 FORK allows ForkChannels to piggy-back messages on a regular channel. Needs to be placed towards the
                 top of the stack. See <<ForkChannel>> for details.
-            
+
 
 ${FORK}
 
